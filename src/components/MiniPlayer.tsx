@@ -2,106 +2,92 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
-  TouchableOpacity,
   StyleSheet,
-  Dimensions,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
-
+import { Ionicons } from '@expo/vector-icons';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, MINI_PLAYER_HEIGHT } from '../constants';
 import { RootStackParamList } from '../types';
-import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZE, MINI_PLAYER_HEIGHT } from '../constants';
-import { getBestImageUrl, getArtistNames } from '../services/api';
-import { usePlayerStore } from '../store';
+import { usePlayerStore } from '../store/playerStore';
+import { useThemeStore, getThemeColors } from '../store/themeStore';
 
-const { width } = Dimensions.get('window');
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MiniPlayer: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  
-  const currentSong = usePlayerStore((state) => state.currentSong);
-  const isPlaying = usePlayerStore((state) => state.isPlaying);
-  const isLoading = usePlayerStore((state) => state.isLoading);
-  const progress = usePlayerStore((state) => state.progress);
-  const togglePlayPause = usePlayerStore((state) => state.togglePlayPause);
-  const playNext = usePlayerStore((state) => state.playNext);
+  const navigation = useNavigation<NavigationProp>();
+  const { isDarkMode } = useThemeStore();
+  const COLORS = getThemeColors(isDarkMode);
+  const { 
+    currentSong, 
+    isPlaying, 
+    togglePlayPause, 
+    playNext,
+    progress,
+    duration 
+  } = usePlayerStore();
 
   if (!currentSong) return null;
 
-  const imageUrl = getBestImageUrl(currentSong.image);
-  const artistNames = getArtistNames(currentSong);
-
-  const handlePress = () => {
-    navigation.navigate('Player', { song: currentSong });
-  };
-
-  const handlePlayPause = async () => {
-    await togglePlayPause();
-  };
-
-  const handleNext = async () => {
-    await playNext();
-  };
+  const artistName = currentSong.artists?.primary?.[0]?.name || currentSong.primaryArtists || 'Unknown Artist';
+  const imageUrl = currentSong.image?.[1]?.url || currentSong.image?.[0]?.url;
+  const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
 
   return (
     <TouchableOpacity
-      style={styles.container}
-      onPress={handlePress}
-      activeOpacity={0.9}
+      style={[styles.container, { backgroundColor: COLORS.background, borderTopColor: COLORS.border }]}
+      onPress={() => navigation.navigate('Player', { song: currentSong })}
+      activeOpacity={0.95}
     >
-      <LinearGradient
-        colors={[COLORS.backgroundSecondary, COLORS.backgroundTertiary]}
-        style={styles.gradient}
-      >
-        {/* Progress bar */}
-        <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { width: `${progress * 100}%` }]} />
+      {/* Progress bar at top */}
+      <View style={[styles.progressBar, { backgroundColor: COLORS.progressBackground }]}>
+        <View style={[styles.progressFill, { width: `${progressPercent}%`, backgroundColor: COLORS.primary }]} />
+      </View>
+
+      <View style={styles.content}>
+        {/* Album Art */}
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.albumArt}
+        />
+
+        {/* Song Info */}
+        <View style={styles.songInfo}>
+          <Text style={[styles.songTitle, { color: COLORS.textPrimary }]} numberOfLines={1}>
+            {currentSong.name}
+          </Text>
+          <Text style={[styles.artistName, { color: COLORS.textSecondary }]} numberOfLines={1}>
+            {artistName}
+          </Text>
         </View>
 
-        <View style={styles.content}>
-          {/* Album art */}
-          <Image source={{ uri: imageUrl }} style={styles.image} />
+        {/* Controls */}
+        <View style={styles.controls}>
+          <TouchableOpacity
+            style={[styles.playPauseButton, { backgroundColor: COLORS.primary }]}
+            onPress={togglePlayPause}
+          >
+            <Ionicons
+              name={isPlaying ? 'pause' : 'play'}
+              size={24}
+              color={COLORS.white}
+            />
+          </TouchableOpacity>
 
-          {/* Song info */}
-          <View style={styles.info}>
-            <Text style={styles.title} numberOfLines={1}>
-              {currentSong.name}
-            </Text>
-            <Text style={styles.artist} numberOfLines={1}>
-              {artistNames}
-            </Text>
-          </View>
-
-          {/* Controls */}
-          <View style={styles.controls}>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={handlePlayPause}
-              disabled={isLoading}
-            >
-              <Ionicons
-                name={isLoading ? 'hourglass' : isPlaying ? 'pause' : 'play'}
-                size={28}
-                color={COLORS.textPrimary}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={handleNext}
-            >
-              <Ionicons
-                name="play-forward"
-                size={24}
-                color={COLORS.textPrimary}
-              />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.nextButton}
+            onPress={playNext}
+          >
+            <Ionicons
+              name="play-skip-forward"
+              size={22}
+              color={COLORS.textPrimary}
+            />
+          </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -109,27 +95,18 @@ const MiniPlayer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     height: MINI_PLAYER_HEIGHT,
-    width: width,
-    borderTopLeftRadius: BORDER_RADIUS.md,
-    borderTopRightRadius: BORDER_RADIUS.md,
-    overflow: 'hidden',
-    elevation: 10,
+    borderTopWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-  },
-  gradient: {
-    flex: 1,
-  },
-  progressContainer: {
-    height: 2,
-    backgroundColor: COLORS.progressBackground,
-    width: '100%',
+    elevation: 5,
   },
   progressBar: {
+    height: 2,
+  },
+  progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
   },
   content: {
     flex: 1,
@@ -137,32 +114,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
   },
-  image: {
+  albumArt: {
     width: 48,
     height: 48,
-    borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.md,
   },
-  info: {
+  songInfo: {
     flex: 1,
-    marginLeft: SPACING.md,
-    justifyContent: 'center',
+    marginHorizontal: SPACING.md,
   },
-  title: {
+  songTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 2,
   },
-  artist: {
+  artistName: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
+    marginTop: 2,
   },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: SPACING.sm,
   },
-  controlButton: {
+  playPauseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextButton: {
     padding: SPACING.sm,
   },
 });

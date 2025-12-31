@@ -14,7 +14,7 @@ interface QueueState {
   addMultipleToQueue: (songs: Song[]) => void;
   removeFromQueue: (index: number) => void;
   clearQueue: () => void;
-  setQueue: (songs: Song[]) => void;
+  setQueue: (songs: Song[], startIndex?: number) => void;
   setCurrentIndex: (index: number) => void;
   reorderQueue: (fromIndex: number, toIndex: number) => void;
   shuffleQueue: () => void;
@@ -22,6 +22,7 @@ interface QueueState {
   getNextSong: () => Song | null;
   getPreviousSong: () => Song | null;
   playFromQueue: (index: number) => Song | null;
+  playNext: (song: Song) => void;
 }
 
 export const useQueueStore = create<QueueState>()(
@@ -104,11 +105,11 @@ export const useQueueStore = create<QueueState>()(
       },
 
       // Set entire queue
-      setQueue: (songs: Song[]) => {
+      setQueue: (songs: Song[], startIndex: number = 0) => {
         set({
           queue: songs,
           originalQueue: [...songs],
-          currentIndex: 0,
+          currentIndex: startIndex,
         });
       },
 
@@ -210,6 +211,36 @@ export const useQueueStore = create<QueueState>()(
         
         set({ currentIndex: index });
         return queue[index];
+      },
+
+      // Play a song next (insert after current song)
+      playNext: (song: Song) => {
+        const { queue, originalQueue, currentIndex } = get();
+        
+        // Check if song already exists in queue
+        const existingIndex = queue.findIndex(s => s.id === song.id);
+        if (existingIndex !== -1) {
+          // Remove from current position
+          const newQueue = [...queue];
+          newQueue.splice(existingIndex, 1);
+          
+          // Insert after current song
+          const insertIndex = existingIndex < currentIndex ? currentIndex : currentIndex + 1;
+          newQueue.splice(insertIndex, 0, song);
+          
+          set({ queue: newQueue });
+          return;
+        }
+        
+        // Insert song after current index
+        const newQueue = [...queue];
+        const insertIndex = currentIndex + 1;
+        newQueue.splice(insertIndex, 0, song);
+        
+        set({
+          queue: newQueue,
+          originalQueue: [...originalQueue, song],
+        });
       },
     }),
     {

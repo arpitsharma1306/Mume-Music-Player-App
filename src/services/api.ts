@@ -11,17 +11,39 @@ import {
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000,
+  timeout: 5000, // 5 second timeout
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
+// Request interceptor to log requests
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', config.url);
+    return config;
+  },
+  (error) => {
+    console.error('Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('API Response:', response.config.url, 'Status:', response.status);
+    return response;
+  },
   (error) => {
     console.error('API Error:', error.message);
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    if (!error.response) {
+      throw new Error('Network error. Please check your internet connection.');
+    }
     return Promise.reject(error);
   }
 );

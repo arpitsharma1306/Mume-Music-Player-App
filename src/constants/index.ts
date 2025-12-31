@@ -1,56 +1,60 @@
 // API Configuration
 export const API_BASE_URL = 'https://saavn.sumit.co';
 
-// Colors - Modern Dark Music Player Theme
+// Colors - Light Theme with Orange Accents (Mume Design)
 export const COLORS = {
-  // Primary colors
-  primary: '#E91E63',
-  primaryLight: '#FF4081',
-  primaryDark: '#C2185B',
+  // Primary colors (Orange)
+  primary: '#F97316',
+  primaryLight: '#FB923C',
+  primaryDark: '#EA580C',
   
   // Accent colors
-  accent: '#00BCD4',
-  accentLight: '#4DD0E1',
+  accent: '#F97316',
+  accentLight: '#FDBA74',
   
-  // Background colors
-  background: '#0D0D0D',
-  backgroundSecondary: '#1A1A1A',
-  backgroundTertiary: '#252525',
-  cardBackground: '#1E1E1E',
+  // Background colors (Light)
+  background: '#FFFFFF',
+  backgroundSecondary: '#F8F8F8',
+  backgroundTertiary: '#F3F4F6',
+  cardBackground: '#FFFFFF',
   
   // Surface colors
-  surface: '#2A2A2A',
-  surfaceLight: '#3A3A3A',
+  surface: '#F9FAFB',
+  surfaceLight: '#FFFFFF',
   
   // Text colors
-  textPrimary: '#FFFFFF',
-  textSecondary: '#B3B3B3',
-  textTertiary: '#666666',
-  textMuted: '#808080',
+  textPrimary: '#1F2937',
+  textSecondary: '#6B7280',
+  textTertiary: '#9CA3AF',
+  textMuted: '#D1D5DB',
   
   // Gradient colors
-  gradientStart: '#E91E63',
-  gradientMiddle: '#9C27B0',
-  gradientEnd: '#673AB7',
+  gradientStart: '#F97316',
+  gradientMiddle: '#FB923C',
+  gradientEnd: '#FDBA74',
   
   // Status colors
-  success: '#4CAF50',
-  error: '#F44336',
-  warning: '#FF9800',
-  info: '#2196F3',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
   
   // Player specific
-  progressBackground: '#333333',
-  progressFill: '#E91E63',
-  seekBarThumb: '#FFFFFF',
+  progressBackground: '#E5E7EB',
+  progressFill: '#F97316',
+  seekBarThumb: '#F97316',
   
   // Misc
-  border: '#333333',
-  divider: '#2A2A2A',
-  overlay: 'rgba(0, 0, 0, 0.7)',
+  border: '#E5E7EB',
+  divider: '#F3F4F6',
+  overlay: 'rgba(0, 0, 0, 0.5)',
   transparent: 'transparent',
   white: '#FFFFFF',
   black: '#000000',
+  
+  // Tab colors
+  tabActive: '#F97316',
+  tabInactive: '#9CA3AF',
 };
 
 // Spacing
@@ -99,8 +103,8 @@ export const TAB_BAR_HEIGHT = 60;
 export const HEADER_HEIGHT = 56;
 
 // API Limits
-export const DEFAULT_PAGE_LIMIT = 20;
-export const MAX_SEARCH_RESULTS = 50;
+export const DEFAULT_PAGE_LIMIT = 100;
+export const MAX_SEARCH_RESULTS = 100;
 
 // Storage keys
 export const STORAGE_KEYS = {

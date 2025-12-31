@@ -3,7 +3,7 @@ const fs = require('fs');
 
 // Ensure assets folder exists
 if (!fs.existsSync('assets')) {
-  fs.mkdirSync('assets');
+    fs.mkdirSync('assets');
 }
 
 const size = 1024;
@@ -20,39 +20,39 @@ const splashSvg = `<svg width="1284" height="2778" xmlns="http://www.w3.org/2000
 </svg>`;
 
 async function createAssets() {
-  try {
-    // Create icon.png (1024x1024)
-    await sharp(Buffer.from(iconSvg))
-      .resize(1024, 1024)
-      .png()
-      .toFile('assets/icon.png');
-    console.log('✓ icon.png created');
+    try {
+        // Create icon.png (1024x1024)
+        await sharp(Buffer.from(iconSvg))
+            .resize(1024, 1024)
+            .png()
+            .toFile('assets/icon.png');
+        console.log('✓ icon.png created');
 
-    // Create adaptive-icon.png (1024x1024)
-    await sharp(Buffer.from(iconSvg))
-      .resize(1024, 1024)
-      .png()
-      .toFile('assets/adaptive-icon.png');
-    console.log('✓ adaptive-icon.png created');
+        // Create adaptive-icon.png (1024x1024)
+        await sharp(Buffer.from(iconSvg))
+            .resize(1024, 1024)
+            .png()
+            .toFile('assets/adaptive-icon.png');
+        console.log('✓ adaptive-icon.png created');
 
-    // Create splash.png (1284x2778)
-    await sharp(Buffer.from(splashSvg))
-      .resize(1284, 2778)
-      .png()
-      .toFile('assets/splash.png');
-    console.log('✓ splash.png created');
+        // Create splash.png (1284x2778)
+        await sharp(Buffer.from(splashSvg))
+            .resize(1284, 2778)
+            .png()
+            .toFile('assets/splash.png');
+        console.log('✓ splash.png created');
 
-    // Create favicon.png (48x48)
-    await sharp(Buffer.from(iconSvg))
-      .resize(48, 48)
-      .png()
-      .toFile('assets/favicon.png');
-    console.log('✓ favicon.png created');
+        // Create favicon.png (48x48)
+        await sharp(Buffer.from(iconSvg))
+            .resize(48, 48)
+            .png()
+            .toFile('assets/favicon.png');
+        console.log('✓ favicon.png created');
 
-    console.log('\nAll assets created successfully!');
-  } catch (error) {
-    console.error('Error creating assets:', error);
-  }
+        console.log('\nAll assets created successfully!');
+    } catch (error) {
+        console.error('Error creating assets:', error);
+    }
 }
 
 createAssets();

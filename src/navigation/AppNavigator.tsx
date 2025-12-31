@@ -1,77 +1,85 @@
 import React from 'react';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootStackParamList, MainTabParamList } from '../types';
-import { COLORS, TAB_BAR_HEIGHT, MINI_PLAYER_HEIGHT } from '../constants';
+import { TAB_BAR_HEIGHT, MINI_PLAYER_HEIGHT } from '../constants';
+import { useThemeStore, getThemeColors, LIGHT_COLORS, DARK_COLORS } from '../store/themeStore';
 
 // Screens
 import HomeScreen from '../screens/HomeScreen';
+import FavoritesScreen from '../screens/FavoritesScreen';
+import PlaylistsScreen from '../screens/PlaylistsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import SearchScreen from '../screens/SearchScreen';
-import LibraryScreen from '../screens/LibraryScreen';
 import PlayerScreen from '../screens/PlayerScreen';
 import QueueScreen from '../screens/QueueScreen';
 
 // Components
 import MiniPlayer from '../components/MiniPlayer';
-import { usePlayerStore } from '../store';
+import { usePlayerStore } from '../store/playerStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Custom dark theme
-const DarkTheme = {
+// Light theme
+const LightTheme = {
   ...DefaultTheme,
-  dark: true,
+  dark: false,
   colors: {
     ...DefaultTheme.colors,
-    primary: COLORS.primary,
-    background: COLORS.background,
-    card: COLORS.backgroundSecondary,
-    text: COLORS.textPrimary,
-    border: COLORS.border,
-    notification: COLORS.primary,
+    primary: LIGHT_COLORS.primary,
+    background: LIGHT_COLORS.background,
+    card: LIGHT_COLORS.background,
+    text: LIGHT_COLORS.textPrimary,
+    border: LIGHT_COLORS.border,
+    notification: LIGHT_COLORS.primary,
   },
 };
 
-// Tab icon component
-const TabIcon = ({ 
-  name, 
-  focused 
-}: { 
-  name: keyof typeof Ionicons.glyphMap; 
-  focused: boolean;
-}) => (
-  <Ionicons
-    name={name}
-    size={24}
-    color={focused ? COLORS.primary : COLORS.textSecondary}
-  />
-);
+// Dark theme
+const AppDarkTheme = {
+  ...DarkTheme,
+  dark: true,
+  colors: {
+    ...DarkTheme.colors,
+    primary: DARK_COLORS.primary,
+    background: DARK_COLORS.background,
+    card: DARK_COLORS.background,
+    text: DARK_COLORS.textPrimary,
+    border: DARK_COLORS.border,
+    notification: DARK_COLORS.primary,
+  },
+};
 
 // Main tab navigator
 const MainTabs: React.FC = () => {
   const currentSong = usePlayerStore((state) => state.currentSong);
+  const { isDarkMode } = useThemeStore();
+  const COLORS = getThemeColors(isDarkMode);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: COLORS.background }]}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: COLORS.backgroundSecondary,
+            backgroundColor: COLORS.background,
             borderTopColor: COLORS.border,
             height: TAB_BAR_HEIGHT,
             paddingBottom: Platform.OS === 'ios' ? 20 : 8,
             paddingTop: 8,
+            elevation: 0,
+            shadowOpacity: 0,
+            borderTopWidth: 1,
           },
           tabBarActiveTintColor: COLORS.primary,
           tabBarInactiveTintColor: COLORS.textSecondary,
           tabBarLabelStyle: {
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '500',
           },
         }}
@@ -81,25 +89,50 @@ const MainTabs: React.FC = () => {
           component={HomeScreen}
           options={{
             tabBarIcon: ({ focused }) => (
-              <TabIcon name={focused ? 'home' : 'home-outline'} focused={focused} />
+              <Ionicons
+                name={focused ? 'home' : 'home-outline'}
+                size={24}
+                color={focused ? COLORS.primary : COLORS.textSecondary}
+              />
             ),
           }}
         />
         <Tab.Screen
-          name="Search"
-          component={SearchScreen}
+          name="Favorites"
+          component={FavoritesScreen}
           options={{
             tabBarIcon: ({ focused }) => (
-              <TabIcon name={focused ? 'search' : 'search-outline'} focused={focused} />
+              <Ionicons
+                name={focused ? 'heart' : 'heart-outline'}
+                size={24}
+                color={focused ? COLORS.primary : COLORS.textSecondary}
+              />
             ),
           }}
         />
         <Tab.Screen
-          name="Library"
-          component={LibraryScreen}
+          name="Playlists"
+          component={PlaylistsScreen}
           options={{
             tabBarIcon: ({ focused }) => (
-              <TabIcon name={focused ? 'library' : 'library-outline'} focused={focused} />
+              <Ionicons
+                name={focused ? 'list' : 'list-outline'}
+                size={24}
+                color={focused ? COLORS.primary : COLORS.textSecondary}
+              />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name={focused ? 'settings' : 'settings-outline'}
+                size={24}
+                color={focused ? COLORS.primary : COLORS.textSecondary}
+              />
             ),
           }}
         />
@@ -117,8 +150,11 @@ const MainTabs: React.FC = () => {
 
 // Root stack navigator
 const AppNavigator: React.FC = () => {
+  const { isDarkMode } = useThemeStore();
+  const COLORS = getThemeColors(isDarkMode);
+  
   return (
-    <NavigationContainer theme={DarkTheme}>
+    <NavigationContainer theme={isDarkMode ? AppDarkTheme : LightTheme}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -146,6 +182,13 @@ const AppNavigator: React.FC = () => {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -154,7 +197,6 @@ const AppNavigator: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   miniPlayerContainer: {
     position: 'absolute',
@@ -162,6 +204,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: MINI_PLAYER_HEIGHT,
+    zIndex: 100,
   },
 });
 

@@ -152,12 +152,14 @@ export type RootStackParamList = {
   Search: undefined;
   ArtistDetails: { artistId: string };
   AlbumDetails: { albumId: string };
+  PlaylistDetails: { playlistId: string };
 };
 
 export type MainTabParamList = {
   Home: undefined;
-  Search: undefined;
-  Library: undefined;
+  Favorites: undefined;
+  Playlists: undefined;
+  Settings: undefined;
 };
 
 // Download types
@@ -171,3 +173,25 @@ export interface DownloadProgress {
   progress: number;
   status: 'pending' | 'downloading' | 'completed' | 'failed';
 }
+
+// Playlist types
+export interface Playlist {
+  id: string;
+  name: string;
+  songs: Song[];
+  createdAt: number;
+  updatedAt: number;
+  coverImage?: string;
+}
+
+// Sort types
+export type SortOrder = 'ascending' | 'descending';
+export type SortBy = 'name' | 'artist' | 'album' | 'year' | 'dateAdded' | 'dateModified' | 'duration';
+
+export interface SortOption {
+  order: SortOrder;
+  by: SortBy;
+}
+
+// Home tab types
+export type HomeTab = 'suggested' | 'songs' | 'artists' | 'albums' | 'folders';

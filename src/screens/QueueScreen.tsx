@@ -15,13 +15,17 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
 import { RootStackParamList, Song } from '../types';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../constants';
+import { SPACING, FONT_SIZE, BORDER_RADIUS } from '../constants';
 import { getBestImageUrl, getArtistNames, formatDuration } from '../services/api';
 import { usePlayerStore, useQueueStore } from '../store';
+import { useThemeStore, getThemeColors } from '../store/themeStore';
 import { EmptyState } from '../components';
 
 const QueueScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const COLORS = getThemeColors(isDarkMode);
   
   const { currentSong, playSong, isPlaying } = usePlayerStore();
   const { queue, currentIndex, removeFromQueue, clearQueue, playFromQueue, setCurrentIndex } = useQueueStore();
@@ -60,7 +64,7 @@ const QueueScreen: React.FC = () => {
 
     return (
       <TouchableOpacity
-        style={[styles.queueItem, isCurrentSong && styles.currentItem]}
+        style={[styles.queueItem, isCurrentSong && { backgroundColor: COLORS.backgroundSecondary }]}
         onPress={() => handlePlayFromQueue(index)}
         activeOpacity={0.7}
       >
@@ -68,27 +72,27 @@ const QueueScreen: React.FC = () => {
           {isCurrentSong && isPlaying ? (
             <Ionicons name="musical-notes" size={18} color={COLORS.primary} />
           ) : (
-            <Text style={[styles.indexText, isCurrentSong && styles.currentIndexText]}>
+            <Text style={[styles.indexText, { color: COLORS.textSecondary }, isCurrentSong && { color: COLORS.primary }]}>
               {index + 1}
             </Text>
           )}
         </View>
 
-        <Image source={{ uri: imageUrl }} style={styles.artwork} />
+        <Image source={{ uri: imageUrl }} style={[styles.artwork, { backgroundColor: COLORS.surface }]} />
 
         <View style={styles.songInfo}>
           <Text
-            style={[styles.songTitle, isCurrentSong && styles.currentTitle]}
+            style={[styles.songTitle, { color: COLORS.textPrimary }, isCurrentSong && { color: COLORS.primary }]}
             numberOfLines={1}
           >
             {item.name}
           </Text>
-          <Text style={styles.artistName} numberOfLines={1}>
+          <Text style={[styles.artistName, { color: COLORS.textSecondary }]} numberOfLines={1}>
             {artistNames}
           </Text>
         </View>
 
-        <Text style={styles.duration}>{duration}</Text>
+        <Text style={[styles.duration, { color: COLORS.textTertiary }]}>{duration}</Text>
 
         {!isCurrentSong && (
           <TouchableOpacity
@@ -117,19 +121,19 @@ const QueueScreen: React.FC = () => {
   // Render header component
   const renderHeader = () => (
     <View style={styles.listHeader}>
-      <Text style={styles.listHeaderTitle}>Up Next</Text>
-      <Text style={styles.listHeaderSubtitle}>
+      <Text style={[styles.listHeaderTitle, { color: COLORS.textPrimary }]}>Up Next</Text>
+      <Text style={[styles.listHeaderSubtitle, { color: COLORS.textSecondary }]}>
         {queue.length} {queue.length === 1 ? 'song' : 'songs'}
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+    <SafeAreaView style={[styles.container, { backgroundColor: COLORS.background }]} edges={['top']}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={COLORS.background} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: COLORS.border }]}>
         <TouchableOpacity
           style={styles.headerButton}
           onPress={() => navigation.goBack()}
@@ -137,32 +141,32 @@ const QueueScreen: React.FC = () => {
           <Ionicons name="close" size={28} color={COLORS.textPrimary} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Queue</Text>
+        <Text style={[styles.headerTitle, { color: COLORS.textPrimary }]}>Queue</Text>
 
         {queue.length > 0 && (
           <TouchableOpacity
             style={styles.headerButton}
             onPress={handleClearQueue}
           >
-            <Text style={styles.clearText}>Clear</Text>
+            <Text style={[styles.clearText, { color: COLORS.primary }]}>Clear</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* Now Playing Section */}
       {currentSong && currentIndex >= 0 && currentIndex < queue.length && (
-        <View style={styles.nowPlayingSection}>
-          <Text style={styles.sectionTitle}>Now Playing</Text>
-          <View style={styles.nowPlayingCard}>
+        <View style={[styles.nowPlayingSection, { borderBottomColor: COLORS.border }]}>
+          <Text style={[styles.sectionTitle, { color: COLORS.textSecondary }]}>Now Playing</Text>
+          <View style={[styles.nowPlayingCard, { backgroundColor: COLORS.surface }]}>
             <Image
               source={{ uri: getBestImageUrl(currentSong.image) }}
-              style={styles.nowPlayingArtwork}
+              style={[styles.nowPlayingArtwork, { backgroundColor: COLORS.surfaceLight }]}
             />
             <View style={styles.nowPlayingInfo}>
-              <Text style={styles.nowPlayingTitle} numberOfLines={1}>
+              <Text style={[styles.nowPlayingTitle, { color: COLORS.textPrimary }]} numberOfLines={1}>
                 {currentSong.name}
               </Text>
-              <Text style={styles.nowPlayingArtist} numberOfLines={1}>
+              <Text style={[styles.nowPlayingArtist, { color: COLORS.textSecondary }]} numberOfLines={1}>
                 {getArtistNames(currentSong)}
               </Text>
             </View>
@@ -192,7 +196,6 @@ const QueueScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   header: {
     flexDirection: 'row',
@@ -201,7 +204,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   headerButton: {
     padding: SPACING.sm,
@@ -210,21 +212,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: FONT_SIZE.xl,
     fontWeight: 'bold',
-    color: COLORS.textPrimary,
   },
   clearText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.primary,
     textAlign: 'right',
   },
   nowPlayingSection: {
     padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   sectionTitle: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -233,7 +231,6 @@ const styles = StyleSheet.create({
   nowPlayingCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.sm,
   },
@@ -241,7 +238,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.surfaceLight,
   },
   nowPlayingInfo: {
     flex: 1,
@@ -250,11 +246,9 @@ const styles = StyleSheet.create({
   nowPlayingTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '600',
-    color: COLORS.textPrimary,
   },
   nowPlayingArtist: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     marginTop: 2,
   },
   listHeader: {
@@ -264,11 +258,9 @@ const styles = StyleSheet.create({
   listHeaderTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: '600',
-    color: COLORS.textPrimary,
   },
   listHeaderSubtitle: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     marginTop: 2,
   },
   listContent: {
@@ -281,9 +273,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-  currentItem: {
-    backgroundColor: COLORS.backgroundSecondary,
-  },
   indexContainer: {
     width: 30,
     alignItems: 'center',
@@ -291,17 +280,12 @@ const styles = StyleSheet.create({
   },
   indexText: {
     fontSize: FONT_SIZE.md,
-    color: COLORS.textSecondary,
     fontWeight: '500',
-  },
-  currentIndexText: {
-    color: COLORS.primary,
   },
   artwork: {
     width: 48,
     height: 48,
     borderRadius: BORDER_RADIUS.sm,
-    backgroundColor: COLORS.surface,
     marginLeft: SPACING.sm,
   },
   songInfo: {
@@ -311,19 +295,13 @@ const styles = StyleSheet.create({
   songTitle: {
     fontSize: FONT_SIZE.md,
     fontWeight: '500',
-    color: COLORS.textPrimary,
-  },
-  currentTitle: {
-    color: COLORS.primary,
   },
   artistName: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textSecondary,
     marginTop: 2,
   },
   duration: {
     fontSize: FONT_SIZE.sm,
-    color: COLORS.textTertiary,
     marginRight: SPACING.sm,
   },
   removeButton: {
