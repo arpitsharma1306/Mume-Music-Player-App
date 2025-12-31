@@ -28,7 +28,8 @@
       "package": "com.mume.musicplayer",
       "permissions": [
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.WAKE_LOCK"
+        "android.permission.WAKE_LOCK",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -42,6 +43,11 @@
         }
       ],
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1eeb2fb7-6870-4274-a449-673d69d32f85"
+      }
+    }
   }
 }
